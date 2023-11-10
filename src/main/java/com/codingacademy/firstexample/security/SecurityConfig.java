@@ -20,37 +20,32 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private UserDetailsService userDetailsService;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+        auth.userDetailsService(userDetailsService).passwordEncoder(new BCryptPasswordEncoder());
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-
         http
                 .authorizeRequests()
-                .antMatchers("/", "/home").permitAll()
-                .antMatchers("/user/register").permitAll()
+                .antMatchers("/user/login").permitAll()
+                .antMatchers("/user/admin/**").hasRole("ADMIN")
+                .antMatchers("/user/teacher/**").hasRole("TEACHER")
+                .antMatchers("/user/student/**").hasRole("STUDENT")
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
                 .loginPage("/user/login")
-                .successHandler(myAuthenticationSuccessHandler())
+                .defaultSuccessUrl("/user/welcome")
+                .failureUrl("/user/login?error=true")
                 .permitAll()
                 .and()
                 .logout()
-                .permitAll()
-                .logoutSuccessUrl("/login?logout");
+                .logoutUrl("/logout")
+                .permitAll();
     }
 
-    @Bean
-    public AuthenticationSuccessHandler myAuthenticationSuccessHandler() {
-        return new SimpleUrlAuthenticationSuccessHandler("/dashboard");
-    }
+
 }

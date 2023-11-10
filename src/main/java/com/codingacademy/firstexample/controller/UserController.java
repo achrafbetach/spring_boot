@@ -4,6 +4,7 @@ package com.codingacademy.firstexample.controller;
 import com.codingacademy.firstexample.model.User;
 import com.codingacademy.firstexample.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -20,9 +21,16 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @GetMapping("/welcome")
+    public String welcome(@AuthenticationPrincipal org.springframework.security.core.userdetails.User user, Model model) {
+        model.addAttribute("username", user.getUsername());
+        model.addAttribute("role", user.getAuthorities());
+        return "user/welcome.html";
+    }
+
     @GetMapping("/login")
     public String showLoginPage() {
-        return "login.html";
+        return "user/login.html";
     }
 
     @GetMapping("/register")
