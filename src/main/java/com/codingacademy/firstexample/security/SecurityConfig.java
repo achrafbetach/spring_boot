@@ -26,6 +26,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         auth.userDetailsService(userDetailsService).passwordEncoder(new BCryptPasswordEncoder());
     }
 
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -38,7 +39,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .formLogin()
                 .loginPage("/user/login")
-                .defaultSuccessUrl("/user/welcome")
+                .successHandler(successHandler())
                 .failureUrl("/user/login?error=true")
                 .permitAll()
                 .and()
@@ -48,4 +49,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
 
+
+    private AuthenticationSuccessHandler successHandler() {
+        return (request, response, authentication) -> {
+            // Your logic to determine the target URL based on the user's role
+            if (authentication.getAuthorities().stream()
+                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
+                response.sendRedirect("/user/welcome");
+            } else {
+                // You can add more conditions for other user roles if needed
+                response.sendRedirect("/access-denied");
+            }
+ };
+}
 }
